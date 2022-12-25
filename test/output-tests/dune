@@ -19,7 +19,7 @@
 
 (executable
  (name test2)
- (libraries mazout ppx_deriving_mazout) ; add your own library here
+ (libraries mazout mazout.ppx_deriving) ; add your own library here
  )
 
 (alias

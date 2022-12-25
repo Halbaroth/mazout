@@ -2,7 +2,7 @@
 .PHONY: all build build-deps fmt fmt-check install dev-deps test
 .PHONY: clean distclean
 
-DEV_DEPS := merlin ocamlformat odoc ppx_expect ppx_inline_test
+DEV_DEPS := merlin ocamlformat odoc
 
 
 SPHINX_TARGET:=_drom/docs/sphinx
@@ -15,7 +15,7 @@ all: build
 build:
 	./scripts/before.sh build
 	opam exec -- dune build @install
-	./scripts/copy-bin.sh mazout ppx_deriving_mazout
+	./scripts/copy-bin.sh mazout mazout.ppx_deriving
 	./scripts/after.sh build
 
 build-deps:

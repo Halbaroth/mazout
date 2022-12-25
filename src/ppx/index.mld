@@ -1,4 +1,4 @@
-{1 Program ppx_deriving_mazout}
+{1 Program mazout.ppx_deriving}
 
 Mazout is type-safe query builder based on Caqti.
 

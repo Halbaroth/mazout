@@ -24,7 +24,7 @@
  )
 
 (package
- (name ppx_deriving_mazout)
+ (name mazout.ppx_deriving)
  (synopsis "[@@deriving mazout]")
  (description "A ppx_deriving for Mazout")
  (depends

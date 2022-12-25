@@ -29,7 +29,7 @@ description = """Mazout is type-safe query builder based on Caqti.
 """
 
 [project]
-skip = []
+skip = ["test"]
 
 # project-wide library dependencies (not for package-specific deps)
 [dependencies]

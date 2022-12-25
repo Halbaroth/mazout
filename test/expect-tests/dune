@@ -6,5 +6,5 @@
   (pps ppx_expect))
  (inline_tests
   (modes best)) ; add js for testing with nodejs
- (libraries mazout ppx_deriving_mazout) ; add your project libraries here
+ (libraries mazout mazout.ppx_deriving) ; add your project libraries here
  )

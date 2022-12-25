@@ -1,6 +1,6 @@
 
 # name of package
-name = "ppx_deriving_mazout"
+name = "mazout.ppx_deriving"
 skeleton = "ppx_deriver"
 
 # version if different from project version
@@ -31,8 +31,6 @@ gen-version = "version.ml"
 # whether the package can be silently skipped if missing deps (default is false)
 # optional = true
 
-# module name used to pack modules (if pack-modules is true)
-pack = "ppx_deriving.mazout"
 
 # preprocessing options
 #  preprocess = "per-module (((action (run ./toto.sh %{input-file})) mod))" 

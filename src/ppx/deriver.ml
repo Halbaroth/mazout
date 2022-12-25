@@ -1,7 +1,6 @@
 open Ppxlib
 module List = ListLabels
 module Builder = Ast_builder.Default
-let pat_var_of_string ~loc txt = Builder.ppat_var ~loc { loc; txt }
 
 let lident_of_string ~loc str =
   Loc.make ~loc (Astlib.Longident.parse str)
@@ -10,7 +9,7 @@ let lident_of_string ~loc str =
 let exp_of_label_decl { pld_name = { loc; txt }; _ } =
   lident_of_string ~loc txt
 
-let pat_of_label_decl {pld_name = {loc; _} as name; _} =
+let pat_of_label_decl { pld_name = {loc; _} as name; _ } =
   Builder.ppat_var ~loc name
 
 (* Produce a expression {field1; field2; ...} from the label declarations
@@ -26,9 +25,9 @@ let record_exp_of_label_decl ~loc lds =
 (* Produce a pattern {field1; field2; ...} from the label declarations
    [field1; field2; ...] *)
 let record_pat_of_label_decl ~loc lds =
-  let pats = List.map lds ~f:(fun {pld_name = {loc; txt}; _} ->
+  let pats = List.map lds ~f:(fun {pld_name = {loc; txt} as name; _} ->
     let lident = Loc.make ~loc (Lident txt) in
-    (lident, pat_var_of_string ~loc txt)
+    (lident, Builder.ppat_var ~loc name)
   )
   in
   Builder.ppat_record ~loc pats Closed
@@ -132,17 +131,16 @@ let rec caqti_wit_of_ty ~loc = function
       let label = Ppxlib.string_of_core_type ty |> prefix ~kind:`Converter in
       lident_of_string ~loc label
 
-(*let rec mazout_wit_of_ty ~loc = function
+let _mazout_wit_of_ty ~loc = function
   | [%type: bool] -> [%expr `Bool]
   | [%type: int] -> [%expr `Int]
-  | [%type: int32] -> [%expr `Int]
-  | [%type: int64] -> [%expr `Bigint]
+  | [%type: int32] -> [%expr `Int32]
+  | [%type: int64] -> [%expr `Int64]
   | [%type: float] -> [%expr `Float]
   | [%type: string] -> [%expr `String]
-  | [%type: Ptime.t t] -> [%expr Caqti_type.Std.ptime]
-  | [%type: Ptime.span t] -> [%expr Caqti_type.Std.ptime_span]
-  | { ptyp_desc = Ptyp_constr ({ txt = Lident "option"; _ }, [arg]); _ } ->
-      [%expr Caqti_type.option [%e caqti_wit_of_ty ~loc arg]]
+  | [%type: octets] -> [%expr `Octets]
+  | [%type: Ptime.t t] -> [%expr `Ptime]
+  | [%type: Ptime.span t] -> [%expr `Ptime_span]
   | { ptyp_desc = Ptyp_tuple tys; _ } -> begin
       match tys with
       | [] | [_] -> failwith "Ocaml invariant"
@@ -164,7 +162,7 @@ let rec caqti_wit_of_ty ~loc = function
       | _ ->
         Location.raise_errorf ~loc "ppx_deriving_mazout: unsupported type"
     end
-  | _ -> [%expr `Foreign_key]*)
+  | _ -> [%expr `Int]
 
 (* Produce the Caqti witness from the label declarations of a record. *)
 let caqti_wit_of_record ~loc lds =
@@ -186,29 +184,72 @@ let converter_body_of_record ~loc ~caqti_wit lds =
     Caqti_type.custom ~encode ~decode [%e caqti_wit]
   ]
 
+(* Generate the body of the Caqti convertor for enumerations. *)
+let converter_body_of_enum ~loc ~name cstrs =
+  let error_case = Builder.case ~lhs:(Builder.ppat_any ~loc)
+    ~guard:None ~rhs:[%expr Error "unknown case"]
+  in
+  let decode_cases = List.map cstrs ~f:(fun { pcd_name = { txt; _ }; _ } ->
+    let lhs = Builder.pstring ~loc txt in
+    let lident = Loc.make ~loc (Astlib.Longident.parse txt) in
+    let rhs = [%expr Ok [%e Builder.pexp_construct ~loc lident None]] in
+    Builder.case ~lhs ~guard:None ~rhs
+  ) @ [error_case]
+  in
+  let encode_cases = List.map cstrs ~f:(fun { pcd_name = { txt; _ }; _ } ->
+    let lident = Loc.make ~loc (Astlib.Longident.parse txt) in
+    let lhs = Builder.ppat_construct ~loc lident None in
+    let rhs = Builder.estring ~loc txt in
+    Builder.case ~lhs ~guard:None ~rhs
+  )
+  in
+  [%expr
+    let decode =
+      [%e Builder.pexp_function ~loc decode_cases]
+    in
+    let encode =
+      [%e Builder.pexp_function ~loc encode_cases]
+    in
+    Caqti_type.enum ~encode ~decode [%e Builder.estring ~loc name]
+  ]
+
 let fields_list_of_record ~loc ~name lds =
-  [%stri let [%p pat_var_of_string ~loc (prefix ~kind:`Fields name)] =
+  let label = Builder.Located.mk ~loc (prefix ~kind:`Fields name) in
+  [%stri let [%p Builder.ppat_var ~loc label] =
     [%e label_list ~loc lds]]
+
+(* Test if all the constructors of a variant type have no payload. *)
+let is_enum cstr_decls =
+  List.for_all cstr_decls ~f:(fun { pcd_res; pcd_args; _ } ->
+    pcd_res = None && match pcd_args with
+    | Pcstr_tuple [] -> true
+    | Pcstr_record _ | Pcstr_tuple _ -> false
+  )
 
 let str_of_type_decl { ptype_name = { txt = name; _ };
   ptype_loc = loc; ptype_kind; ptype_manifest; _ } =
+  let label = Builder.Located.mk ~loc (prefix ~kind:`Converter name) in
   match ptype_kind with
   | Ptype_record lds ->
       let caqti_wit = caqti_wit_of_record ~loc lds in
       let body = converter_body_of_record ~loc ~caqti_wit lds in
-      [[%stri let [%p pat_var_of_string ~loc (prefix ~kind:`Converter name)]
+      [[%stri let [%p Builder.ppat_var ~loc label]
         = [%e body]]
       ; fields_list_of_record ~loc ~name lds]
   | Ptype_abstract -> begin
       match ptype_manifest with
       | Some ty -> begin
         let caqti_wit = caqti_wit_of_ty ~loc ty in
-        [%str let [%p pat_var_of_string ~loc (prefix ~kind:`Converter name)]
+        [%str let [%p Builder.ppat_var ~loc label]
           = [%e caqti_wit]]
       end
       | None ->
       Location.raise_errorf ~loc "ppx_deriving_mazout: unsupported type"
     end
+  | Ptype_variant cstr_decls when is_enum cstr_decls ->
+      let body = converter_body_of_enum ~loc ~name cstr_decls in
+      [%str let [%p Builder.ppat_var ~loc label]
+        = [%e body]]
   | Ptype_open | Ptype_variant _ ->
       Location.raise_errorf ~loc "ppx_deriving_mazout: unsupported type"
 

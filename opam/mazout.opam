@@ -10,6 +10,8 @@ Mazout is type-safe query builder based on Caqti.
 """
 authors: ["Pierre Villemot <pierre.villemot@ocamlpro.com>"]
 maintainer: ["Pierre Villemot <pierre.villemot@ocamlpro.com>"]
+homepage: "https://github.com/Halbaroth/mazout"
+bug-reports: "https://github.com/Halbaroth/mazout/issues"
 build: [
   ["dune" "subst"] {dev}
   ["sh" "-c" "./scripts/before.sh build '%{name}%'"]

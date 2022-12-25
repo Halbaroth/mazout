@@ -10,6 +10,7 @@ Welcome to mazout
    :maxdepth: 2
    :caption: Documentation
 
+   Home <https://github.com/Halbaroth/mazout>
    about
    install
    license

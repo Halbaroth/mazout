@@ -4,7 +4,7 @@
   (public_name ppx_deriving_mazout)
   (kind ppx_deriver)
   (libraries ppxlib ppx_deriving caqti-lwt caqti-driver-sqlite3 caqti base alcotest )
-  
+  (preprocess (pps ppxlib.metaquot))
   
   )
 

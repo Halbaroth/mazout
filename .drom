@@ -5,7 +5,7 @@ version:0.6.1
 
 # hash of toml configuration files
 # used for generation of all files
-55a44ba95cd75e9a63035e27617a539d:.
+17e0f069b7da2f25810f28d1e6dcb127:.
 # end context for .
 
 # begin context for .github/workflows/workflow.yml
@@ -50,7 +50,7 @@ d5e1e82d2f0bc90bde06ec8060bb4b49:CHANGES.md
 
 # begin context for README.md
 # file README.md
-26d70d556cda12affa06eb10f0399a65:README.md
+2979c5609fe4ba16040de0a42353b29b:README.md
 # end context for README.md
 
 # begin context for docs/README.txt
@@ -70,7 +70,7 @@ e739f3026aa997af4026bc428f4c9ef6:docs/favicon.png
 
 # begin context for docs/index.html
 # file docs/index.html
-1b7de99712f51f8662614a3ee1ee0936:docs/index.html
+5d90a4b130f6f7dc79cd7f2b87be12ea:docs/index.html
 # end context for docs/index.html
 
 # begin context for docs/sphinx/index.html
@@ -95,17 +95,17 @@ d158aac7bed2f3bc8ce262d3578653ce:drom.toml
 
 # begin context for dune-project
 # file dune-project
-f6d5773ea777113d0cae132de9ebf704:dune-project
+be64092b9c21770d4ce965ee21d92065:dune-project
 # end context for dune-project
 
 # begin context for opam/mazout.opam
 # file opam/mazout.opam
-fde3c744020fc89ff766dd2ac8838110:opam/mazout.opam
+815904d4752721df87c60c879b45650e:opam/mazout.opam
 # end context for opam/mazout.opam
 
 # begin context for opam/ppx_deriving_mazout.opam
 # file opam/ppx_deriving_mazout.opam
-39df4181e9bfcbe4dd802e68acf72842:opam/ppx_deriving_mazout.opam
+3242b00c20b221efea804aa35f8ba9d4:opam/ppx_deriving_mazout.opam
 # end context for opam/ppx_deriving_mazout.opam
 
 # begin context for scripts/after.sh
@@ -140,7 +140,7 @@ bb3a9d286f0dc64021db4194427263ee:scripts/copy-bin.sh
 
 # begin context for sphinx/index.rst
 # file sphinx/index.rst
-8abd6ef287670c51c0b025d61df7a134:sphinx/index.rst
+29d136fd88f591a9ce3ffc65b57ab952:sphinx/index.rst
 # end context for sphinx/index.rst
 
 # begin context for sphinx/install.rst
@@ -175,7 +175,7 @@ bb3a9d286f0dc64021db4194427263ee:scripts/copy-bin.sh
 
 # begin context for src/ppx/dune
 # file src/ppx/dune
-3023545eae3840fe563016a77b18129f:src/ppx/dune
+4bc16b08af311dff11c7fdd69b3d7e51:src/ppx/dune
 # end context for src/ppx/dune
 
 # begin context for src/ppx/index.mld

@@ -7,10 +7,10 @@ skeleton = "ppx_deriver"
 # version = "0.1.0"
 
 # synopsis if different from project synopsis
-synopsis = "A ppx_deriving for Mazout"
+synopsis = "[@@deriving mazout]"
 
 # description if different from project description
-# description = ...
+description = "A ppx_deriving for Mazout"
 
 # kind is either "library", "program" or "virtual"
 kind = "library"
@@ -36,7 +36,7 @@ pack = "ppx_deriving.mazout"
 
 # preprocessing options
 #  preprocess = "per-module (((action (run ./toto.sh %{input-file})) mod))" 
-# preprocess = "pps ppx_deriving_encoding"
+preprocess = "pps ppxlib.metaquot"
 
 # files to skip while updating at package level
 # skip = []
@@ -46,9 +46,9 @@ pack = "ppx_deriving.mazout"
 #   ez_file = ">=0.1 <1.3"
 #   base-unix = { libname = "unix", version = ">=base" } 
 [dependencies]
+ppxlib = ">=0.15"
 base = ""
 caqti = ""
-ppxlib = ">=0.15"
 [dependencies.alcotest]
 for-test = true
 [dependencies.caqti-driver-sqlite3]

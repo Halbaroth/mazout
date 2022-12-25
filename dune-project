@@ -25,8 +25,8 @@
 
 (package
  (name ppx_deriving_mazout)
- (synopsis "A ppx_deriving for Mazout")
- (description "Mazout is type-safe query builder based on Caqti.\n")
+ (synopsis "[@@deriving mazout]")
+ (description "A ppx_deriving for Mazout")
  (depends
    (ocaml (>= 4.12.0))
    (ppxlib ( >= 0.15 ))

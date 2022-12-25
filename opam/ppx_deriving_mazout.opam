@@ -4,12 +4,12 @@ opam-version: "2.0"
 name: "ppx_deriving_mazout"
 version: "0.0.1"
 license: "LGPL-2.1-only with OCaml-LGPL-linking-exception"
-synopsis: "A ppx_deriving for Mazout"
-description: """\
-Mazout is type-safe query builder based on Caqti.
-"""
+synopsis: "[@@deriving mazout]"
+description: "A ppx_deriving for Mazout"
 authors: ["Pierre Villemot <pierre.villemot@ocamlpro.com>"]
 maintainer: ["Pierre Villemot <pierre.villemot@ocamlpro.com>"]
+homepage: "https://github.com/Halbaroth/mazout"
+bug-reports: "https://github.com/Halbaroth/mazout/issues"
 build: [
   ["dune" "subst"] {dev}
   ["sh" "-c" "./scripts/before.sh build '%{name}%'"]

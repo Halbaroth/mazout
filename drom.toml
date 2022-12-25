@@ -11,7 +11,8 @@ min-edition = "4.12.0"
 name = "mazout"
 synopsis = "The mazout project"
 version = "0.0.1"
-
+homepage = "https://github.com/Halbaroth/mazout"
+bug-reports = "https://github.com/Halbaroth/mazout/issues"
 # keys that you could also define:
 # odoc-target = "...odoc-target..."
 # sphinx-target = "...sphinx-target..."

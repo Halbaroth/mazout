@@ -15,7 +15,7 @@ all: build
 build:
 	./scripts/before.sh build
 	opam exec -- dune build @install
-	./scripts/copy-bin.sh mazout mazout.ppx_deriving
+	./scripts/copy-bin.sh mazout mazout.ppx_deriving runtime
 	./scripts/after.sh build
 
 build-deps:

@@ -1,0 +1,8 @@
+{1 Library runtime}
+
+Mazout is type-safe query builder based on Caqti.
+
+
+
+The entry point of this library is the module: {!Runtime}.
+

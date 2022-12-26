@@ -3,25 +3,24 @@ drom-version = "0.1"
 
 [project]
 authors = ["Pierre Villemot <pierre.villemot@ocamlpro.com>"]
+bug-reports = "https://github.com/Halbaroth/mazout/issues"
 ci-systems = ["ubuntu-latest", "macos-latest", "windows-latest"]
 copyright = "Pierre Villemot <pierre.villemot@ocamlpro.com>"
 edition = "4.14.0"
+homepage = "https://github.com/Halbaroth/mazout"
 license = "LGPL2"
 min-edition = "4.12.0"
 name = "mazout"
 synopsis = "The mazout project"
 version = "0.0.1"
-homepage = "https://github.com/Halbaroth/mazout"
-bug-reports = "https://github.com/Halbaroth/mazout/issues"
+
 # keys that you could also define:
 # odoc-target = "...odoc-target..."
 # sphinx-target = "...sphinx-target..."
 # archive = "...archive..."
 # dev-repo = "...dev-repo..."
-# bug-reports = "...bug-reports..."
 # doc-api = "...doc-api..."
 # doc-gen = "...doc-gen..."
-# homepage = "...homepage..."
 # github-organization = "...github-organization..."
 
 [project]
@@ -73,4 +72,8 @@ dir = "src/lib"
 [[package]]
 dir = "src/ppx"
 # edit 'src/ppx/package.toml' for package-specific options
+
+[[package]]
+dir = "src/runtime"
+# edit 'src/runtime/package.toml' for package-specific options
 

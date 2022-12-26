@@ -22,8 +22,6 @@ type cstr =
   | `Default
   ]
 
-type meta = wit * cstr list
-
 (* --------------------------------------- *)
 
 let lident_of_string ~loc str =

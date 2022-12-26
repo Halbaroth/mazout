@@ -1,16 +1,16 @@
 
 # name of package
-name = "mazout.ppx_deriving"
-skeleton = "ppx_deriver"
+name = "runtime"
+skeleton = "library"
 
 # version if different from project version
 # version = "0.1.0"
 
 # synopsis if different from project synopsis
-synopsis = "[@@deriving mazout]"
+# synopsis = ...
 
 # description if different from project description
-description = "A ppx_deriving for Mazout"
+# description = ...
 
 # kind is either "library", "program" or "virtual"
 kind = "library"
@@ -36,7 +36,7 @@ gen-version = "version.ml"
 
 # preprocessing options
 #  preprocess = "per-module (((action (run ./toto.sh %{input-file})) mod))" 
-preprocess = "pps ppxlib.metaquot"
+# preprocess = "pps ppx_deriving_encoding"
 
 # files to skip while updating at package level
 skip = ["main.ml"]
@@ -48,15 +48,6 @@ skip = ["main.ml"]
 [dependencies]
 base = ""
 caqti = ""
-ppxlib = ">=0.15"
-[dependencies.alcotest]
-for-test = true
-[dependencies.caqti-driver-sqlite3]
-for-test = true
-[dependencies.caqti-lwt]
-for-test = true
-[dependencies.ppx_deriving]
-for-test = true
 
 # package tools dependencies
 [tools]

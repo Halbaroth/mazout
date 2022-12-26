@@ -43,4 +43,19 @@
   )
  )
 
+(package
+ (name runtime)
+ (synopsis "The mazout project")
+ (description "Mazout is type-safe query builder based on Caqti.\n")
+ (depends
+   (ocaml (>= 4.12.0))
+   caqti
+   base
+   ppx_inline_test
+   ppx_expect
+   odoc
+   ocamlformat
+  )
+ )
+
 

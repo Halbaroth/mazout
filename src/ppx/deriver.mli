@@ -20,6 +20,4 @@ type cstr =
   | `Default
   ]
 
-type meta = wit * cstr list
-
 val queryable : Deriving.t

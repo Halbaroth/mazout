@@ -37,7 +37,7 @@ gen-version = "version.ml"
 preprocess = "pps ppxlib.metaquot"
 
 # files to skip while updating at package level
-# skip = []
+skip = ["main.ml"]
 
 # package library dependencies
 #   [dependencies]

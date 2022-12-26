@@ -187,8 +187,8 @@ let label_list ~loc lds =
       in
       [%expr
         [%e Builder.estring ~loc label],
-        [%e mazout_wit_of_ty ~loc pld_type],
-        [%e Builder.elist ~loc attrs]] )
+          [%e mazout_wit_of_ty ~loc pld_type],
+          [%e Builder.elist ~loc attrs]] )
   |> Builder.elist ~loc
 
 (* Produce the Caqti witness from the label declarations of a record. *)

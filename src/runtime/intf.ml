@@ -12,6 +12,7 @@ type wit =
 
 module type M = sig
   type t
+
   type meta
 
   val t : t Caqti_type.t

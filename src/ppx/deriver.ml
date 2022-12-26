@@ -141,27 +141,6 @@ let _mazout_wit_of_ty ~loc = function
   | [%type: octets] -> [%expr `Octets]
   | [%type: Ptime.t t] -> [%expr `Ptime]
   | [%type: Ptime.span t] -> [%expr `Ptime_span]
-  | { ptyp_desc = Ptyp_tuple tys; _ } -> begin
-      match tys with
-      | [] | [_] -> failwith "Ocaml invariant"
-      | [ty1; ty2] ->
-          let ty1 = caqti_wit_of_ty ~loc ty1 in
-          let ty2 = caqti_wit_of_ty ~loc ty2 in
-          [%expr Caqti_type.tup2 [%e ty1] [%e ty2]]
-      | [ty1; ty2; ty3] ->
-          let ty1 = caqti_wit_of_ty ~loc ty1 in
-          let ty2 = caqti_wit_of_ty ~loc ty2 in
-          let ty3 = caqti_wit_of_ty ~loc ty3 in
-          [%expr Caqti_type.tup3 [%e ty1] [%e ty2] [%e ty3]]
-      | [ty1; ty2; ty3; ty4] ->
-          let ty1 = caqti_wit_of_ty ~loc ty1 in
-          let ty2 = caqti_wit_of_ty ~loc ty2 in
-          let ty3 = caqti_wit_of_ty ~loc ty3 in
-          let ty4 = caqti_wit_of_ty ~loc ty4 in
-          [%expr Caqti_type.tup4 [%e ty1] [%e ty2] [%e ty3] [%e ty4]]
-      | _ ->
-        Location.raise_errorf ~loc "ppx_deriving_mazout: unsupported type"
-    end
   | _ -> [%expr `Int]
 
 (* Produce the Caqti witness from the label declarations of a record. *)
@@ -184,10 +163,21 @@ let converter_body_of_record ~loc ~caqti_wit lds =
     Caqti_type.custom ~encode ~decode [%e caqti_wit]
   ]
 
+(* Generate the pattern _ as v *)
+let ppat_wildcase ~loc ~alias =
+  let any = Builder.ppat_any ~loc in
+  match alias with
+  | None -> any
+  | Some v -> Builder.(ppat_alias ~loc any (Located.mk ~loc v))
+
 (* Generate the body of the Caqti convertor for enumerations. *)
 let converter_body_of_enum ~loc ~name cstrs =
-  let error_case = Builder.case ~lhs:(Builder.ppat_any ~loc)
-    ~guard:None ~rhs:[%expr Error "unknown case"]
+  let error_case =
+    let rhs = [%expr
+      Error (Format.sprintf "unknown case %s" [%e Builder.evar ~loc "t"])
+    ]
+    in
+    Builder.case ~lhs:(ppat_wildcase ~loc ~alias:(Some "t")) ~guard:None ~rhs
   in
   let decode_cases = List.map cstrs ~f:(fun { pcd_name = { txt; _ }; _ } ->
     let lhs = Builder.pstring ~loc txt in
@@ -213,10 +203,49 @@ let converter_body_of_enum ~loc ~name cstrs =
     Caqti_type.enum ~encode ~decode [%e Builder.estring ~loc name]
   ]
 
+(* Test if all the constructor of a polymorphic variant type have no
+   payload. *)
+let converter_body_of_polymorphic_enum ~loc ~name row_fields =
+  let error_case =
+   let rhs = [%expr
+      Error (Format.sprintf "unknown case %s" [%e Builder.evar ~loc "t"])
+    ]
+    in
+    Builder.case ~lhs:(ppat_wildcase ~loc ~alias:(Some "t")) ~guard:None ~rhs
+  in
+  let decode_cases = List.map row_fields ~f:(fun { prf_desc; _ } ->
+    match prf_desc with
+    | Rtag ({ txt; _ }, _, _) ->
+      let lhs = Builder.pstring ~loc txt in
+      let rhs = [%expr Ok [%e Builder.pexp_variant ~loc txt None]] in
+      Builder.case ~lhs ~guard:None ~rhs
+    | Rinherit { ptyp_desc = Ptyp_variant (_row_fields, _, _); _ } ->
+        Location.raise_errorf ~loc
+          "ppx_deriving_mazout: extension not yet supported"
+    | _ -> Location.raise_errorf ~loc "ppx_deriving_mazout: malformed variant"
+ ) @ [error_case]
+  in
+  let encode_cases = List.map row_fields ~f:(fun { prf_desc; _ } ->
+    match prf_desc with
+    | Rtag ({ txt; _ }, _, _) ->
+      let lhs = Builder.ppat_variant ~loc txt None in
+      let rhs = Builder.estring ~loc txt in
+      Builder.case ~lhs ~guard:None ~rhs
+    | Rinherit { ptyp_desc = Ptyp_variant (_row_fields, _, _); _ } ->
+        Location.raise_errorf ~loc
+          "ppx_deriving_mazout: extension not yet supported"
+    | _ -> Location.raise_errorf ~loc "ppx_deriving_mazout: malformed variant"
+  )
+  in
+  [%expr
+    let decode = [%e Builder.pexp_function ~loc decode_cases] in
+    let encode = [%e Builder.pexp_function ~loc encode_cases] in
+    Caqti_type.enum ~encode ~decode [%e Builder.estring ~loc name]
+  ]
+
 let fields_list_of_record ~loc ~name lds =
   let label = Builder.Located.mk ~loc (prefix ~kind:`Fields name) in
-  [%stri let [%p Builder.ppat_var ~loc label] =
-    [%e label_list ~loc lds]]
+  [%stri let [%p Builder.ppat_var ~loc label] = [%e label_list ~loc lds]]
 
 (* Test if all the constructors of a variant type have no payload. *)
 let is_enum cstr_decls =
@@ -226,6 +255,17 @@ let is_enum cstr_decls =
     | Pcstr_record _ | Pcstr_tuple _ -> false
   )
 
+(* Test if all the constructor of a polymorphic variant type have no
+   payload. *)
+let rec is_polymorphic_enum row_fields =
+  List.for_all row_fields ~f:(fun { prf_desc; _ } ->
+    match prf_desc with
+    | Rtag (_, true, []) -> true
+    | Rinherit { ptyp_desc = Ptyp_variant (row_fields, _, _); _ } ->
+        is_polymorphic_enum row_fields
+    | Rtag _ | Rinherit _ -> false
+  )
+
 let str_of_type_decl { ptype_name = { txt = name; _ };
   ptype_loc = loc; ptype_kind; ptype_manifest; _ } =
   let label = Builder.Located.mk ~loc (prefix ~kind:`Converter name) in
@@ -233,23 +273,24 @@ let str_of_type_decl { ptype_name = { txt = name; _ };
   | Ptype_record lds ->
       let caqti_wit = caqti_wit_of_record ~loc lds in
       let body = converter_body_of_record ~loc ~caqti_wit lds in
-      [[%stri let [%p Builder.ppat_var ~loc label]
-        = [%e body]]
+      [[%stri let [%p Builder.ppat_var ~loc label] = [%e body]]
       ; fields_list_of_record ~loc ~name lds]
   | Ptype_abstract -> begin
       match ptype_manifest with
+      | Some { ptyp_desc = Ptyp_variant (row_fields, _, _); _ }
+        when is_polymorphic_enum row_fields ->
+        let body = converter_body_of_polymorphic_enum ~loc ~name row_fields in
+        [%str let [%p Builder.ppat_var ~loc label] = [%e body]]
       | Some ty -> begin
         let caqti_wit = caqti_wit_of_ty ~loc ty in
-        [%str let [%p Builder.ppat_var ~loc label]
-          = [%e caqti_wit]]
+        [%str let [%p Builder.ppat_var ~loc label] = [%e caqti_wit]]
       end
       | None ->
       Location.raise_errorf ~loc "ppx_deriving_mazout: unsupported type"
     end
   | Ptype_variant cstr_decls when is_enum cstr_decls ->
       let body = converter_body_of_enum ~loc ~name cstr_decls in
-      [%str let [%p Builder.ppat_var ~loc label]
-        = [%e body]]
+      [%str let [%p Builder.ppat_var ~loc label] = [%e body]]
   | Ptype_open | Ptype_variant _ ->
       Location.raise_errorf ~loc "ppx_deriving_mazout: unsupported type"
 

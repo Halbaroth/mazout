@@ -1,0 +1,18 @@
+(tests
+ (names ppx)
+ (libraries
+   alcotest
+   mazout.ppx_deriving
+   caqti
+   caqti.blocking
+   caqti-driver-sqlite3
+   uri
+   lens)
+ (preprocess
+   (pps
+     mazout.ppx_deriving
+     ppx_deriving.show
+     ppx_deriving.make
+     lens.ppx_deriving))
+ (action
+   (run %{test} -e)))

@@ -2,6 +2,30 @@ open Ppxlib
 module List = ListLabels
 module Builder = Ast_builder.Default
 
+type wit =
+  [ `Bool
+  | `Int
+  | `Int32
+  | `Int64
+  | `Float
+  | `String
+  | `Octets
+  | `Ptime
+  | `Ptime_span
+  ]
+
+type cstr =
+  [ `Not_null
+  | `Unique
+  | `Primary_key
+  | `Foreign_key
+  | `Default
+  ]
+
+type meta = wit * cstr list
+
+(* --------------------------------------- *)
+
 let lident_of_string ~loc str =
   Loc.make ~loc (Astlib.Longident.parse str) |> Builder.pexp_ident ~loc
 
@@ -67,11 +91,12 @@ let rec caqti_wit_tuple ~loc = function
       let ty = type_tuple ~loc tl in
       [%type: [%t hd] * [%t ty]]*)
 
-(* Generate the list of the labels of a record. *)
-let label_list ~loc lds =
-  List.map lds ~f:(fun { pld_name = { txt = label; _ }; _ } ->
-      [%expr [%e Builder.estring ~loc label]] )
-  |> Builder.elist ~loc
+(* Generate the pattern _ as v *)
+let ppat_wildcase ~loc ~alias =
+  let any = Builder.ppat_any ~loc in
+  match alias with
+  | None -> any
+  | Some v -> Builder.(ppat_alias ~loc any (Located.mk ~loc v))
 
 (* --------------------------------------- *)
 
@@ -130,7 +155,7 @@ let rec caqti_wit_of_ty ~loc = function
     let label = Ppxlib.string_of_core_type ty |> prefix ~kind:`Converter in
     lident_of_string ~loc label
 
-let _mazout_wit_of_ty ~loc = function
+let mazout_wit_of_ty ~loc = function
   | [%type: bool] -> [%expr `Bool]
   | [%type: int] -> [%expr `Int]
   | [%type: int32] -> [%expr `Int32]
@@ -141,6 +166,32 @@ let _mazout_wit_of_ty ~loc = function
   | [%type: Ptime.t t] -> [%expr `Ptime]
   | [%type: Ptime.span t] -> [%expr `Ptime_span]
   | _ -> [%expr `Int]
+
+let constraint_of_attr ~loc { attr_name = { txt; _ }; _ } =
+  match txt with
+  | "not_null" -> Some [%expr `Not_null]
+  | "unique" -> Some [%expr `Unique]
+  | "primary_key" -> Some [%expr `Primary_key]
+  | "foreign_key" -> Some [%expr `Foreign_key]
+  | "default" -> Some [%expr `Default]
+  | _ -> None
+
+(* Generate the metainformations of labels of a record. *)
+let label_list ~loc lds =
+  List.map lds
+    ~f:(fun { pld_name = { txt = label; _ }; pld_type; pld_attributes; _ } ->
+      let attrs =
+        List.partition_map pld_attributes ~f:(fun attr ->
+            match constraint_of_attr ~loc attr with
+            | Some attr -> Left attr
+            | None -> Right attr )
+        |> fst
+      in
+      [%expr
+        [%e Builder.estring ~loc label],
+        [%e mazout_wit_of_ty ~loc pld_type],
+        [%e Builder.elist ~loc attrs]] )
+  |> Builder.elist ~loc
 
 (* Produce the Caqti witness from the label declarations of a record. *)
 let caqti_wit_of_record ~loc lds =
@@ -159,13 +210,6 @@ let converter_body_of_record ~loc ~caqti_wit lds =
       Ok [%e nested_tuple_expr ~loc exps]
     in
     Caqti_type.custom ~encode ~decode [%e caqti_wit]]
-
-(* Generate the pattern _ as v *)
-let ppat_wildcase ~loc ~alias =
-  let any = Builder.ppat_any ~loc in
-  match alias with
-  | None -> any
-  | Some v -> Builder.(ppat_alias ~loc any (Located.mk ~loc v))
 
 (* Generate the body of the Caqti convertor for enumerations. *)
 let converter_body_of_enum ~loc ~name cstrs =

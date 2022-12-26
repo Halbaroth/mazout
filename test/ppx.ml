@@ -49,10 +49,10 @@ let _ = converter_status
 [@@@end]
 
 type user = {
-  name : string;
-  role : role;
+  name : string; [@not_null]
+  role : role; [@default Guest] [@not_null]
   status : status;
-  id : int;
+  id : int; [@primary_key]
 }
 [@@deriving make, show] [@@deriving_inline queryable]
 
@@ -68,7 +68,11 @@ let converter_user =
 
 let _ = converter_user
 
-let fields_user = [ "name"; "role"; "status"; "id" ]
+let fields_user =
+  [("name", `String, [`Not_null]);
+  ("role", `Int, [`Default; `Not_null]);
+  ("status", `Int, []);
+  ("id", `Int, [`Primary_key])]
 
 let _ = fields_user
 

@@ -1,8 +1,4 @@
-
-
-
-
-# mazout
+# Mazout
 
 Mazout is type-safe query builder based on Caqti.
 

@@ -10,7 +10,6 @@
 (*                                                                        *)
 (**************************************************************************)
 
-
 (* If you delete or rename this file, you should add
    'src/mazout/main.ml' to the 'skip' field in "drom.toml" *)
 

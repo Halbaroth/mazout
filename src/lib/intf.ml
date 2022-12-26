@@ -4,8 +4,8 @@ module type Field = sig
   val t : t Caqti_type.t
 end
 
-type ty = [
-  | `Bool
+type ty =
+  [ `Bool
   | `Int
   | `Int16
   | `Int32
@@ -17,12 +17,14 @@ type ty = [
   | `Ptime
   | `Ptime_span
   | `Enum
-]
+  ]
 
 module type Model = sig
   type t
 
   val t : t Caqti_type.t
+
   val name : string
+
   val fields : ty list
 end

@@ -69,10 +69,12 @@ let converter_user =
 let _ = converter_user
 
 let fields_user =
-  [("name", `String, [`Not_null]);
-  ("role", `Int, [`Default; `Not_null]);
-  ("status", `Int, []);
-  ("id", `Int, [`Primary_key])]
+  [
+    ("name", `String, [ `Not_null ]);
+    ("role", `Int, [ `Default; `Not_null ]);
+    ("status", `Int, []);
+    ("id", `Int, [ `Primary_key ]);
+  ]
 
 let _ = fields_user
 

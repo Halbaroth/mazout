@@ -2,26 +2,6 @@ open Ppxlib
 module List = ListLabels
 module Builder = Ast_builder.Default
 
-type wit =
-  [ `Bool
-  | `Int
-  | `Int32
-  | `Int64
-  | `Float
-  | `String
-  | `Octets
-  | `Ptime
-  | `Ptime_span
-  ]
-
-type cstr =
-  [ `Not_null
-  | `Unique
-  | `Primary_key
-  | `Foreign_key
-  | `Default
-  ]
-
 (* --------------------------------------- *)
 
 let lident_of_string ~loc str =

@@ -14,6 +14,7 @@
      mazout.ppx_deriving
      ppx_deriving.show
      ppx_deriving.make
+     ppx_fields_conv
      lens.ppx_deriving))
  (action
    (run %{test} -e)))

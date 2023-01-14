@@ -5,19 +5,21 @@ type 'a cstr =
   | Foreign_key
   | Default of 'a
 
+type 'a cstrs = 'a cstr list
+
 type wit =
-  | Bool of bool cstr list
-  | Int of int cstr list
-  | Int16 of int cstr list
-  | Int32 of int32 cstr list
-  | Int64 of int64 cstr list
-  | Float of float cstr list
-  | String of string cstr list
-  | Octets of string cstr list
-  | Pdate of Ptime.t cstr list
-  | Ptime of Ptime.t cstr list
-  | Ptime_span of Ptime.Span.t cstr list
-  | Enum of string cstr list
+  | Bool of bool cstrs
+  | Int of int cstrs
+  | Int16 of int cstrs
+  | Int32 of int32 cstrs
+  | Int64 of int64 cstrs
+  | Float of float cstrs
+  | String of string cstrs
+  | Octets of string cstrs
+  | Pdate of Ptime.t cstrs
+  | Ptime of Ptime.t cstrs
+  | Ptime_span of Ptime.Span.t cstrs
+  | Enum of string cstrs
 
 module type Field = sig
   type t

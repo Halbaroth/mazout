@@ -9,7 +9,7 @@ module Builder = Ast_builder.Default
 (* --------------------------------------- *)
 
 let lident_of_label { txt; loc } =
-  Builder.(Located.mk ~loc (Astlib.Longident.parse txt) |> pexp_ident ~loc)
+  Builder.(Astlib.Longident.parse txt |> Located.mk ~loc |> pexp_ident ~loc)
 
 let exp_of_label_decl { pld_name; _ } = lident_of_label pld_name
 
@@ -17,7 +17,7 @@ let pat_of_label_decl { pld_name = { loc; _ } as name; _ } =
   Builder.ppat_var ~loc name
 
 (* Produce a expression {field1; field2; ...} from the label declarations
-   [field1; field2; ...] *)
+   [field1; field2; ...]. *)
 let record_exp_of_label_decl ~loc lds =
   let exps =
     List.map lds ~f:(fun { pld_name = { loc; txt }; _ } ->
@@ -27,7 +27,7 @@ let record_exp_of_label_decl ~loc lds =
   Builder.pexp_record ~loc exps None
 
 (* Produce a pattern {field1; field2; ...} from the label declarations
-   [field1; field2; ...] *)
+   [field1; field2; ...]. *)
 let record_pat_of_label_decl ~loc lds =
   let pats =
     List.map lds ~f:(fun { pld_name = { loc; txt } as name; _ } ->
@@ -56,13 +56,16 @@ let rec nested_tuple_expr ~loc = function
 
 (* Generate an expression Caqti_type.tup2 (x, Caqti_type.tup2 (y, ...)) from
    the list [x; y; ...]. *)
-let rec caqti_wit_tuple ~loc = function
-  | [] -> [%expr unit]
-  | [ expr ] -> expr
-  | hd :: [ expr ] -> [%expr Caqti_type.tup2 [%e hd] [%e expr]]
-  | hd :: tl ->
-    let expr = caqti_wit_tuple ~loc tl in
-    [%expr Caqti_type.tup2 [%e hd] [%e expr]]
+let caqti_wit_tuple =
+  let rec aux ~loc = function
+    | [] -> [%expr unit]
+    | [ expr ] -> expr
+    | hd :: [ expr ] -> [%expr tup2 [%e hd] [%e expr]]
+    | hd :: tl ->
+      let expr = aux ~loc tl in
+      [%expr tup2 [%e hd] [%e expr]]
+  in
+  fun ~loc lst -> [%expr Caqti_type.([%e aux ~loc lst])]
 
 (* Generate the type x * (y * ...) from the list of types [x; y; ...]. *)
 (*let rec type_tuple ~loc = function
@@ -73,7 +76,7 @@ let rec caqti_wit_tuple ~loc = function
       let ty = type_tuple ~loc tl in
       [%type: [%t hd] * [%t ty]]*)
 
-(* Generate the pattern _ as v *)
+(* Generate the pattern _ as v. *)
 let ppat_wildcase ~loc ~alias =
   let any = Builder.ppat_any ~loc in
   match alias with
@@ -89,7 +92,7 @@ let prefix ~(kind : [ `Converter | `Fields ]) name =
   | `Converter, None -> begin
     match name with
     | "t" -> name
-    | ty -> "converter_" ^ ty
+    | ty -> ty
   end
   | `Fields, Some (prefix, "t") -> prefix ^ ".fields"
   | `Fields, Some (prefix, ty) -> prefix ^ ".fields_" ^ ty
@@ -101,14 +104,14 @@ let prefix ~(kind : [ `Converter | `Fields ]) name =
 
 (* Produce the Caqti witness from a core type. *)
 let rec caqti_wit_of_ty ~loc = function
-  | [%type: bool] -> [%expr Caqti_type.Std.bool]
-  | [%type: int] -> [%expr Caqti_type.Std.int]
-  | [%type: int32] -> [%expr Caqti_type.Std.int32]
-  | [%type: int64] -> [%expr Caqti_type.Std.int64]
-  | [%type: float] -> [%expr Caqti_type.Std.float]
-  | [%type: string] -> [%expr Caqti_type.Std.string]
-  | [%type: Ptime.t t] -> [%expr Caqti_type.Std.ptime]
-  | [%type: Ptime.span t] -> [%expr Caqti_type.Std.ptime_span]
+  | [%type: bool] -> [%expr Std.bool]
+  | [%type: int] -> [%expr Std.int]
+  | [%type: int32] -> [%expr Std.int32]
+  | [%type: int64] -> [%expr Std.int64]
+  | [%type: float] -> [%expr Std.float]
+  | [%type: string] -> [%expr Std.string]
+  | [%type: Ptime.t t] -> [%expr Std.ptime]
+  | [%type: Ptime.span t] -> [%expr Std.ptime_span]
   | { ptyp_desc = Ptyp_constr ({ txt = Lident "option"; _ }, [ arg ]); _ } ->
     [%expr Caqti_type.option [%e caqti_wit_of_ty ~loc arg]]
   | { ptyp_desc = Ptyp_tuple tys; _ } -> begin
@@ -119,18 +122,18 @@ let rec caqti_wit_of_ty ~loc = function
     | [ ty1; ty2 ] ->
       let ty1 = caqti_wit_of_ty ~loc ty1 in
       let ty2 = caqti_wit_of_ty ~loc ty2 in
-      [%expr Caqti_type.tup2 [%e ty1] [%e ty2]]
+      [%expr tup2 [%e ty1] [%e ty2]]
     | [ ty1; ty2; ty3 ] ->
       let ty1 = caqti_wit_of_ty ~loc ty1 in
       let ty2 = caqti_wit_of_ty ~loc ty2 in
       let ty3 = caqti_wit_of_ty ~loc ty3 in
-      [%expr Caqti_type.tup3 [%e ty1] [%e ty2] [%e ty3]]
+      [%expr tup3 [%e ty1] [%e ty2] [%e ty3]]
     | [ ty1; ty2; ty3; ty4 ] ->
       let ty1 = caqti_wit_of_ty ~loc ty1 in
       let ty2 = caqti_wit_of_ty ~loc ty2 in
       let ty3 = caqti_wit_of_ty ~loc ty3 in
       let ty4 = caqti_wit_of_ty ~loc ty4 in
-      [%expr Caqti_type.tup4 [%e ty1] [%e ty2] [%e ty3] [%e ty4]]
+      [%expr tup4 [%e ty1] [%e ty2] [%e ty3] [%e ty4]]
     | _ -> Location.raise_errorf ~loc "ppx_deriving_mazout: unsupported type"
   end
   | _ as ty ->
@@ -138,47 +141,64 @@ let rec caqti_wit_of_ty ~loc = function
     Builder.Located.mk ~loc label |> lident_of_label
 
 (* TODO: Raise an exception if the argument is not a structure. *)
-let constraint_of_attr ~loc _ty { attr_name = { txt; _ }; attr_payload; _ } =
+let constraint_of_attr ~loc ~converter
+    { attr_name = { txt; _ }; attr_payload; _ } =
   match (txt, attr_payload) with
-  | "not_null", PStr [] -> Some [%expr Mazout_runtime.Intf.Not_null]
-  | "unique", PStr [] -> Some [%expr Mazout_runtime.Intf.Unique]
-  | "primary_key", PStr [] -> Some [%expr Mazout_runtime.Intf.Primary_key]
-  | "foreign_key", PStr [] -> Some [%expr Mazout_runtime.Intf.Foreign_key]
-  | "default", PStr [ { pstr_desc = Pstr_eval (e, _); _ } ] ->
-    Some [%expr Mazout_runtime.Intf.Default [%e e]]
+  | "not_null", PStr [] -> Some [%expr Not_null]
+  | "unique", PStr [] -> Some [%expr Unique]
+  | "primary_key", PStr [] -> Some [%expr Primary_key]
+  | "foreign_key", PStr [] -> Some [%expr Foreign_key]
+  | "default", PStr [ { pstr_desc = Pstr_eval (e, _); _ } ] -> (
+    match converter with
+    | Some c ->
+      let e = Builder.pexp_apply ~loc c [ (Nolabel, e) ] in
+      Some [%expr Default [%e e]]
+    | None -> Some [%expr Default [%e e]] )
   | _ -> None
 
-(* Produce the the list of mazout witnesses. *)
-let mazout_wit_of_ty ~loc attrs ty =
-  let cstrs =
-    List.partition_map attrs ~f:(fun attr ->
-        match constraint_of_attr ~loc ty attr with
+let suffix_lident ~suffix = function
+  | Lident s -> Lident (s ^ suffix)
+  | Ldot (lident, s) -> Ldot (lident, s ^ suffix)
+  | Lapply _ -> failwith "Invalid argument"
+
+(* Produce the the list of mazout witnesses with sql attributes of
+   a label declaration. *)
+let mazout_wit_of_ty ~loc
+    { pld_name = { txt = label; _ }; pld_type; pld_attributes; _ } =
+  let cstrs ~converter =
+    List.partition_map pld_attributes ~f:(fun attr ->
+        match constraint_of_attr ~loc ~converter attr with
         | Some attr -> Left attr
         | None -> Right attr )
     |> fst |> Builder.elist ~loc
   in
-  match ty with
-  | [%type: bool] -> [%expr Mazout_runtime.Intf.Bool [%e cstrs]]
-  | [%type: int] -> [%expr Mazout_runtime.Intf.Int [%e cstrs]]
-  | [%type: int16] -> [%expr Mazout_runtime.Intf.Int [%e cstrs]]
-  | [%type: int32] -> [%expr Mazout_runtime.Intf.Int32 [%e cstrs]]
-  | [%type: int64] -> [%expr Mazout_runtime.Intf.Int64 [%e cstrs]]
-  | [%type: float] -> [%expr Mazout_runtime.Intf.Float [%e cstrs]]
-  | [%type: string] -> [%expr Mazout_runtime.Intf.String [%e cstrs]]
-  | [%type: octets] -> [%expr Mazout_runtime.Intf.Octets [%e cstrs]]
-  | [%type: Ptime.t t] -> [%expr Mazout_runtime.Intf.Ptime [%e cstrs]]
-  | [%type: Ptime.span t] -> [%expr Mazout_runtime.Intf.Ptime_span [%e cstrs]]
-  | { ptyp_desc = Ptyp_constr (_, []); _ } ->
-    [%expr Mazout_runtime.Intf.Enum [%e cstrs]]
-  | _ -> [%expr Int [%e cstrs]]
+  match pld_type with
+  | [%type: bool] -> [%expr Bool [%e cstrs ~converter:None]]
+  | [%type: int] -> [%expr Int [%e cstrs ~converter:None]]
+  | [%type: int16] -> [%expr Int [%e cstrs ~converter:None]]
+  | [%type: int32] -> [%expr Int32 [%e cstrs ~converter:None]]
+  | [%type: int64] -> [%expr Int64 [%e cstrs ~converter:None]]
+  | [%type: float] -> [%expr Float [%e cstrs ~converter:None]]
+  | [%type: string] -> [%expr String [%e cstrs ~converter:None]]
+  | [%type: octets] -> [%expr Octets [%e cstrs ~converter:None]]
+  | [%type: Ptime.t t] -> [%expr Ptime [%e cstrs ~converter:None]]
+  | [%type: Ptime.span t] -> [%expr Ptime_span [%e cstrs ~converter:None]]
+  | { ptyp_desc = Ptyp_constr ({txt = lident; loc}, []); _ } ->
+    let converter =
+      suffix_lident ~suffix:"_id" lident
+      |> Builder.Located.mk ~loc |> Builder.pexp_ident ~loc |> Option.some
+    in
+    [%expr Int [%e cstrs ~converter]]
+  | _ ->
+    let converter =
+      Builder.Located.mk ~loc label |> lident_of_label |> Option.some
+    in
+    [%expr Int [%e cstrs ~converter]]
 
 (* Generate the metainformations of labels of a record. *)
 let label_list ~loc lds =
-  List.map lds
-    ~f:(fun { pld_name = { txt = label; _ }; pld_type; pld_attributes; _ } ->
-      [%expr
-        [%e Builder.estring ~loc label],
-          [%e mazout_wit_of_ty ~loc pld_attributes pld_type]] )
+  List.map lds ~f:(fun ({ pld_name = { txt = label; _ }; _ } as ld) ->
+      [%expr [%e Builder.estring ~loc label], [%e mazout_wit_of_ty ~loc ld]] )
   |> Builder.elist ~loc
 
 (* Produce the Caqti witness from the label declarations of a record. *)
@@ -186,7 +206,9 @@ let caqti_wit_of_record ~loc lds =
   let tys = List.map lds ~f:(fun { pld_type; _ } -> pld_type) in
   List.map tys ~f:(caqti_wit_of_ty ~loc) |> caqti_wit_tuple ~loc
 
-let generate_converter ~loc ~name ~caqti_wit ~kind ~encode ~decode =
+(* Generate the converter function for custom or enum fields. *)
+let generate_converter ~loc ~name ~caqti_wit ~(kind : [ `Custom | `Enum ])
+    ~encode ~decode =
   let encode_lb = Builder.Located.mk ~loc (name ^ "_encode") in
   let decode_lb = Builder.Located.mk ~loc (name ^ "_decode") in
   let wit_lb = Builder.Located.mk ~loc name in
@@ -207,6 +229,14 @@ let generate_converter ~loc ~name ~caqti_wit ~kind ~encode ~decode =
         Caqti_type.enum ~encode:[%e lident_of_label encode_lb]
           ~decode:[%e lident_of_label decode_lb] [%e caqti_wit]]
 
+(* Generate the fields list with metainformations of a record. *)
+let fields_list_of_record ~loc ~name lds =
+  let label = Builder.Located.mk ~loc (prefix ~kind:`Fields name) in
+  [%str
+    let [%p Builder.ppat_var ~loc label] =
+      let open Mazout_runtime.Intf in
+      [%e label_list ~loc lds]]
+
 (* Generate the structure for a record. *)
 let str_of_record ~loc ~name lds =
   let exps = List.map lds ~f:exp_of_label_decl in
@@ -223,6 +253,7 @@ let str_of_record ~loc ~name lds =
         Ok [%e record_exp_of_label_decl ~loc lds]]
   in
   generate_converter ~loc ~name ~caqti_wit ~kind:`Custom ~encode ~decode
+  @ fields_list_of_record ~loc ~name lds
 
 (* Generate the structure for an enumeration. *)
 let str_of_enum ~loc ~name cstrs =
@@ -237,7 +268,7 @@ let str_of_enum ~loc ~name cstrs =
   let encode =
     let encode_cases =
       List.map cstrs ~f:(fun { pcd_name = { txt; _ }; _ } ->
-          let lident = Loc.make ~loc (Astlib.Longident.parse txt) in
+          let lident = Astlib.Longident.parse txt |> Loc.make ~loc in
           let lhs = Builder.ppat_construct ~loc lident None in
           let rhs = Builder.estring ~loc txt in
           Builder.case ~lhs ~guard:None ~rhs )
@@ -248,7 +279,7 @@ let str_of_enum ~loc ~name cstrs =
     let decode_cases =
       List.map cstrs ~f:(fun { pcd_name = { txt; _ }; _ } ->
           let lhs = Builder.pstring ~loc txt in
-          let lident = Loc.make ~loc (Astlib.Longident.parse txt) in
+          let lident = Astlib.Longident.parse txt |> Loc.make ~loc in
           let rhs = [%expr Ok [%e Builder.pexp_construct ~loc lident None]] in
           Builder.case ~lhs ~guard:None ~rhs )
       @ [ error_case ]
@@ -302,10 +333,6 @@ let str_of_polymorphic_enum ~loc ~name row_fields =
     Builder.pexp_function ~loc decode_cases
   in
   generate_converter ~loc ~name ~caqti_wit ~kind:`Enum ~encode ~decode
-
-let _fields_list_of_record ~loc ~name lds =
-  let label = Builder.Located.mk ~loc (prefix ~kind:`Fields name) in
-  [%stri let [%p Builder.ppat_var ~loc label] = [%e label_list ~loc lds]]
 
 (* Test if all the constructors of a variant type have no payload. *)
 let is_enum cstr_decls =

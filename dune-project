@@ -44,7 +44,7 @@
  )
 
 (package
- (name runtime)
+ (name mazout.runtime)
  (synopsis "The mazout project")
  (description "Mazout is type-safe query builder based on Caqti.\n")
  (depends

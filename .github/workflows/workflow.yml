@@ -59,7 +59,7 @@ jobs:
 
       - run: opam pin add . -y --no-action
 
-      - run: opam depext -y mazout mazout.ppx_deriving runtime
+      - run: opam depext -y mazout mazout.ppx_deriving mazout.runtime
 #        if: steps.cache-opam.outputs.cache-hit != 'true'
 
       - run: opam install -y opam/*.opam --deps-only --with-test

@@ -5,12 +5,12 @@ version:0.6.1
 
 # hash of toml configuration files
 # used for generation of all files
-abc748bf08522b14dfe1fe6b69c05d35:.
+1fee2eb1bcea02f75afcd0c5b008c252:.
 # end context for .
 
 # begin context for .github/workflows/workflow.yml
 # file .github/workflows/workflow.yml
-056f5cc156dcb4aead68d802def89519:.github/workflows/workflow.yml
+39a245c768cad9c030e11b02833c543c:.github/workflows/workflow.yml
 # end context for .github/workflows/workflow.yml
 
 # begin context for .gitignore
@@ -35,7 +35,7 @@ a8d1bcd6f62c6b813b77d3ff8959d8d2:.ocamlformat-ignore
 
 # begin context for CHANGES.md
 # file CHANGES.md
-f295b9a35869d9be3a9af9e2ba460326:CHANGES.md
+230471492510f2dab4491e5f261f9c72:CHANGES.md
 # end context for CHANGES.md
 
 # begin context for LICENSE.md
@@ -45,7 +45,7 @@ f295b9a35869d9be3a9af9e2ba460326:CHANGES.md
 
 # begin context for Makefile
 # file Makefile
-2490f4ebbc85b8fcba1d874668c0eec2:Makefile
+164f688009ec66dd14838e739ce1334c:Makefile
 # end context for Makefile
 
 # begin context for README.md
@@ -95,7 +95,7 @@ aedf1a4e52d884ae1199cc06bd705512:drom.toml
 
 # begin context for dune-project
 # file dune-project
-5d6366edbe0a81009a3d5c830780753b:dune-project
+5dbe43b0d53f89855709c9905f67b966:dune-project
 # end context for dune-project
 
 # begin context for opam/mazout.opam
@@ -107,6 +107,16 @@ aedf1a4e52d884ae1199cc06bd705512:drom.toml
 # file opam/mazout.ppx_deriving.opam
 1338f9ff6cdc315d519e8baa80240337:opam/mazout.ppx_deriving.opam
 # end context for opam/mazout.ppx_deriving.opam
+
+# begin context for opam/mazout.runtime.opam
+# file opam/mazout.runtime.opam
+27b081d71a773c269a72733688815db1:opam/mazout.runtime.opam
+# end context for opam/mazout.runtime.opam
+
+# begin context for opam/mazout_runtime.opam
+# file opam/mazout_runtime.opam
+fe9af55e8ed3edf15fbc91b4f2a2042e:opam/mazout_runtime.opam
+# end context for opam/mazout_runtime.opam
 
 # begin context for opam/ppx-deriving-mazout.opam
 # file opam/ppx-deriving-mazout.opam
@@ -195,7 +205,7 @@ bb3a9d286f0dc64021db4194427263ee:scripts/copy-bin.sh
 
 # begin context for src/ppx/dune
 # file src/ppx/dune
-a56b13e8c2fb11e8567dcaab875a6573:src/ppx/dune
+a8bda200ec22a35e9069479e19ca7673:src/ppx/dune
 # end context for src/ppx/dune
 
 # begin context for src/ppx/index.mld
@@ -215,12 +225,12 @@ a56b13e8c2fb11e8567dcaab875a6573:src/ppx/dune
 
 # begin context for src/runtime/dune
 # file src/runtime/dune
-8f4fcb03a29e766d79fc5af1cf3d6a9e:src/runtime/dune
+ecd2167c7fc2ec1717d17e45ff050cca:src/runtime/dune
 # end context for src/runtime/dune
 
 # begin context for src/runtime/index.mld
 # file src/runtime/index.mld
-7cec09ac3415adc03c8e8efa62fb0ef5:src/runtime/index.mld
+d7d23d6d4f4506cadbf35a9018d341c4:src/runtime/index.mld
 # end context for src/runtime/index.mld
 
 # begin context for src/runtime/package.toml
@@ -235,7 +245,7 @@ b2203e225d1abfc1431ec2f83b4c8484:src/runtime/package.toml
 
 # begin context for test/expect-tests/dune
 # file test/expect-tests/dune
-2d5b67685ac4d390841477563043b3fc:test/expect-tests/dune
+d92610fa5b8fc4717abdd19fdc7523ec:test/expect-tests/dune
 # end context for test/expect-tests/dune
 
 # begin context for test/expect-tests/test.ml
@@ -245,7 +255,7 @@ b2203e225d1abfc1431ec2f83b4c8484:src/runtime/package.toml
 
 # begin context for test/inline-tests/dune
 # file test/inline-tests/dune
-a455e86d343c6c537ecaed7b29212058:test/inline-tests/dune
+e6209c7dd03b812f8effce8fd7f8cfae:test/inline-tests/dune
 # end context for test/inline-tests/dune
 
 # begin context for test/inline-tests/test.ml
@@ -255,7 +265,7 @@ a455e86d343c6c537ecaed7b29212058:test/inline-tests/dune
 
 # begin context for test/output-tests/dune
 # file test/output-tests/dune
-a2faa220cd525ed8a9ab107b3a9ed4ab:test/output-tests/dune
+0ffcb72f5619388409cdb4414524552d:test/output-tests/dune
 # end context for test/output-tests/dune
 
 # begin context for test/output-tests/test1.expected

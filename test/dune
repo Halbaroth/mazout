@@ -3,6 +3,7 @@
  (libraries
    alcotest
    mazout.ppx_deriving
+   mazout_runtime
    caqti
    caqti.blocking
    caqti-driver-sqlite3

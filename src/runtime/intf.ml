@@ -2,10 +2,10 @@ type 'a cstr =
   | Not_null
   | Unique
   | Primary_key
-  | Foreign_key of { name : string; key: int }
+  | Foreign_key
   | Default of 'a
 
-type wit = private
+type wit =
   | Bool of bool cstr list
   | Int of int cstr list
   | Int16 of int cstr list
@@ -35,7 +35,7 @@ module type Model = sig
   val fields : (string * wit) list
 end
 
-module type Model1 = sig
+module type Model_with_key = sig
   include Model
 
   val primary_key : t -> int

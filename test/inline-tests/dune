@@ -6,4 +6,4 @@
   (pps ppx_inline_test))
  (inline_tests
   (modes best)) ; add js for testing with nodejs
- (libraries mazout mazout.ppx_deriving runtime))
+ (libraries mazout mazout.ppx_deriving mazout.runtime))

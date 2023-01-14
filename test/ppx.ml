@@ -6,21 +6,24 @@ type role =
 
 let _ = fun (_ : role) -> ()
 
-let converter_role =
-  let decode = function
-    | "Guest" -> Ok Guest
-    | "Moderator" -> Ok Moderator
-    | "Admin" -> Ok Admin
-    | _ as t -> Error (Format.sprintf "unknown case %s" t)
-  in
-  let encode = function
-    | Guest -> "Guest"
-    | Moderator -> "Moderator"
-    | Admin -> "Admin"
-  in
-  Caqti_type.enum ~encode ~decode "role"
+let role_encode = function
+  | Guest -> "Guest"
+  | Moderator -> "Moderator"
+  | Admin -> "Admin"
 
-let _ = converter_role
+let _ = role_encode
+
+let role_decode = function
+  | "Guest" -> Ok Guest
+  | "Moderator" -> Ok Moderator
+  | "Admin" -> Ok Admin
+  | _ as t -> Error (Format.sprintf "unknown case %s" t)
+
+let _ = role_decode
+
+let role = Caqti_type.enum ~encode:role_encode ~decode:role_decode "role"
+
+let _ = role
 
 [@@@end]
 
@@ -32,25 +35,30 @@ type status =
 
 let _ = fun (_ : status) -> ()
 
-let converter_status =
-  let decode = function
-    | "Employee" -> Ok `Employee
-    | "Director" -> Ok `Director
-    | _ as t -> Error (Format.sprintf "unknown case %s" t)
-  in
-  let encode = function
-    | `Employee -> "Employee"
-    | `Director -> "Director"
-  in
-  Caqti_type.enum ~encode ~decode "status"
+let status_encode = function
+  | `Employee -> "Employee"
+  | `Director -> "Director"
 
-let _ = converter_status
+let _ = status_encode
+
+let status_decode = function
+  | "Employee" -> Ok `Employee
+  | "Director" -> Ok `Director
+  | _ as t -> Error (Format.sprintf "unknown case %s" t)
+
+let _ = status_decode
+
+let status =
+  Caqti_type.enum ~encode:status_encode ~decode:status_decode "status"
+
+let _ = status
 
 [@@@end]
 
 type user = {
   name : string; [@not_null]
-  role : role; [@default Guest] [@not_null]
+  age : int; [@not_null]
+  role : role; [@not_null] [@default Guest]
   status : status;
   id : int; [@primary_key]
 }
@@ -58,24 +66,22 @@ type user = {
 
 let _ = fun (_ : user) -> ()
 
-let converter_user =
-  let decode (name, (role, (status, id))) = Ok { name; role; status; id } in
-  let encode { name; role; status; id } = Ok (name, (role, (status, id))) in
-  Caqti_type.custom ~encode ~decode
+let user_encode { name; age; role; status; id } =
+  Ok (name, (age, (role, (status, id))))
+let _ = user_encode
+
+let user_decode (name, (age, (role, (status, id)))) =
+  Ok { name; age; role; status; id }
+
+let _ = user_decode
+
+let user =
+  Caqti_type.custom ~encode:user_encode ~decode:user_decode
     (Caqti_type.tup2 Caqti_type.Std.string
-       (Caqti_type.tup2 converter_role
-          (Caqti_type.tup2 converter_status Caqti_type.Std.int) ) )
+       (Caqti_type.tup2 Caqti_type.Std.int
+          (Caqti_type.tup2 converter_role
+             (Caqti_type.tup2 converter_status Caqti_type.Std.int) ) ) )
 
-let _ = converter_user
-
-let fields_user =
-  [
-    ("name", `String, [ `Not_null ]);
-    ("role", `Int, [ `Default; `Not_null ]);
-    ("status", `Int, []);
-    ("id", `Int, [ `Primary_key ]);
-  ]
-
-let _ = fields_user
+let _ = user
 
 [@@@end]

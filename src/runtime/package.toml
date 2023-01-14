@@ -1,6 +1,6 @@
 
 # name of package
-name = "runtime"
+name = "mazout.runtime"
 skeleton = "library"
 
 # version if different from project version
